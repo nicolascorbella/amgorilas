@@ -1,65 +1,55 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Amgorilas - Pagos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>Amgorilas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Subí tu comprobante</h1>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-      <input type="number" name="amount" placeholder="Monto pagado" required />
-      <input type="file" name="screenshot" accept="image/*" required />
-      <button type="submit">Subir</button>
-    </form>
+  <h1>Subí tu comprobante</h1>
+  <form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="number" name="amount" placeholder="Monto pagado" required />
+    <input type="file" name="screenshot" accept="image/*" required />
+    <button type="submit">Subir</button>
+  </form>
 
-    <h2>Progreso:</h2>
-    <div class="progress-wrapper">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
-    <p id="progress-text"></p>
-
-    <h2>Pagos recibidos:</h2>
-    <div id="payments-list"></div>
+  <h2>Progreso:</h2>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
   </div>
+  <div id="progress-text"></div>
+
+  <h2>Pagos Subidos</h2>
+  <div id="payments-list"></div>
 
   <script>
-    function fetchProgress() {
-      fetch('/progress')
-        .then(res => res.json())
-        .then(data => {
-          const percent = Math.min((data.paid / data.total) * 100, 100);
-          document.getElementById('progress-bar').style.width = percent + '%';
-          document.getElementById('progress-text').innerText =
-            `Pagado: $${data.paid} / $${data.total}`;
-        });
-    }
+    fetch('/progress')
+      .then(res => res.json())
+      .then(data => {
+        const percent = (data.paid / data.total) * 100;
+        document.getElementById('progress-bar').style.width = percent + '%';
+        document.getElementById('progress-text').innerText =
+          `Pagado: $${data.paid} / $${data.total}`;
+      });
 
-    function fetchPayments() {
-      fetch('/payments')
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById('payments-list');
-          list.innerHTML = '';
-          data.forEach(p => {
-            const item = document.createElement('div');
-            item.className = 'payment-card';
-            item.innerHTML = `
-              <img src="/uploads/${p.filename}" alt="comprobante" />
-              <div class="info">
-                <strong>$${p.amount}</strong>
-                <p>${new Date(p.timestamp).toLocaleString()}</p>
-              </div>
-            `;
-            list.appendChild(item);
-          });
-        });
-    }
-
-    fetchProgress();
-    fetchPayments();
+    fetch('/payments')
+      .then(res => res.json())
+      .then(payments => {
+        const list = document.getElementById('payments-list');
+        if (payments.length === 0) {
+          list.innerHTML = '<p>Aún no se subieron pagos.</p>';
+        } else {
+          list.innerHTML = payments.map(p => `
+            <div class="payment-card">
+              <strong>$${p.amount}</strong><br/>
+              <small>${new Date(p.uploadedAt).toLocaleString()}</small><br/>
+              <a href="/uploads/${p.filename}" target="_blank">Ver Comprobante</a>
+            </div>
+          `).join('');
+        }
+      });
   </script>
 </body>
 </html>
