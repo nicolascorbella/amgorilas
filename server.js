@@ -1,32 +1,35 @@
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
-const bodyParser = require('body-parser');
 const path = require('path');
-const app = express();
-const PORT = process.env.PORT || 3000;
 
-const upload = multer({ dest: 'uploads/' });
-const DATA_FILE = 'data.json';
+const app = express();
+const upload = multer({ dest: '/tmp/uploads' }); // en Vercel usar /tmp para subir
+const DATA_FILE = '/tmp/data.json'; // usar /tmp porque Vercel es serverless (cambio temporal)
 const TOTAL_DEBT = 600000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Leer el archivo con el monto pagado actual
+// Funciones para leer/escribir data en /tmp
 function readData() {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ paid: 0 }));
+  try {
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify({ paid: 0 }));
+    }
+    return JSON.parse(fs.readFileSync(DATA_FILE));
+  } catch {
+    return { paid: 0 };
   }
-  return JSON.parse(fs.readFileSync(DATA_FILE));
 }
 
-// Guardar monto actualizado
 function writeData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data));
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data));
+  } catch {}
 }
 
-// Ruta para cargar captura + monto
+// Ruta upload
 app.post('/upload', upload.single('screenshot'), (req, res) => {
   const amount = parseInt(req.body.amount);
   if (isNaN(amount) || amount <= 0) {
@@ -41,12 +44,11 @@ app.post('/upload', upload.single('screenshot'), (req, res) => {
   res.redirect('/');
 });
 
-// Ruta para obtener progreso actual
+// Ruta progress
 app.get('/progress', (req, res) => {
   const data = readData();
   res.json({ paid: data.paid, total: TOTAL_DEBT });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+// Exportar app para Vercel (NO usar app.listen)
+module.exports = app;
