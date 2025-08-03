@@ -5,6 +5,7 @@
   ],
   "routes": [
     { "src": "/upload", "methods": ["POST"], "dest": "/server.js" },
-    { "src": "/progress", "methods": ["GET"], "dest": "/server.js" }
+    { "src": "/progress", "methods": ["GET"], "dest": "/server.js" },
+    { "src": "/(.*)", "dest": "/server.js" }
   ]
 }
