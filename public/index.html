@@ -1,44 +1,65 @@
-body {
-  font-family: sans-serif;
-  background: #f8f9fa;
-  margin: 0;
-  padding: 20px;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Amgorilas - Pagos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Subí tu comprobante</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+      <input type="number" name="amount" placeholder="Monto pagado" required />
+      <input type="file" name="screenshot" accept="image/*" required />
+      <button type="submit">Subir</button>
+    </form>
 
-.container {
-  max-width: 480px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+    <h2>Progreso:</h2>
+    <div class="progress-wrapper">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p id="progress-text"></p>
 
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  font-size: 16px;
-}
+    <h2>Pagos recibidos:</h2>
+    <div id="payments-list"></div>
+  </div>
 
-button {
-  background: #305EF2;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
+  <script>
+    function fetchProgress() {
+      fetch('/progress')
+        .then(res => res.json())
+        .then(data => {
+          const percent = Math.min((data.paid / data.total) * 100, 100);
+          document.getElementById('progress-bar').style.width = percent + '%';
+          document.getElementById('progress-text').innerText =
+            `Pagado: $${data.paid} / $${data.total}`;
+        });
+    }
 
-.progress-wrapper {
-  width: 100%;
-  background: #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 10px;
-}
+    function fetchPayments() {
+      fetch('/payments')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('payments-list');
+          list.innerHTML = '';
+          data.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'payment-card';
+            item.innerHTML = `
+              <img src="/uploads/${p.filename}" alt="comprobante" />
+              <div class="info">
+                <strong>$${p.amount}</strong>
+                <p>${new Date(p.timestamp).toLocaleString()}</p>
+              </div>
+            `;
+            list.appendChild(item);
+          });
+        });
+    }
 
-.progress-bar {
-  height: 20px;
-  background: #4caf50;
-  width: 0%;
-  transition: width
+    fetchProgress();
+    fetchPayments();
+  </script>
+</body>
+</html>
