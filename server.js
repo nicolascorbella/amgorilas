@@ -1,89 +1,75 @@
 const express = require('express');
-const multer = require('multer');
 const fs = require('fs');
+const multer = require('multer');
 const path = require('path');
 
 const app = express();
-const uploadDir = '/tmp/uploads';
-const upload = multer({ dest: uploadDir });
-const DATA_FILE = '/tmp/data.json';
-const TOTAL_DEBT = 600000;
+const PORT = process.env.PORT || 3000;
 
+const upload = multer({ dest: 'uploads/' });
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(uploadDir));
 
-function readData() {
+// ✅ Ruta que devuelve todos los pagos
+app.get('/payments', (req, res) => {
   try {
-    if (!fs.existsSync(DATA_FILE)) {
-      // Inicializamos con paid y un array de pagos
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ paid: 0, payments: [] }));
-    }
-    return JSON.parse(fs.readFileSync(DATA_FILE));
-  } catch {
-    return { paid: 0, payments: [] };
+    const data = fs.readFileSync('data.json', 'utf8');
+    const json = JSON.parse(data);
+    res.json(json.payments || []);
+  } catch (err) {
+    res.status(500).json({ error: 'No se pudo leer data.json' });
   }
-}
+});
 
-function writeData(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data));
-  } catch {}
-}
-
-// POST /upload
+// ✅ Ruta para subir comprobante
 app.post('/upload', upload.single('screenshot'), (req, res) => {
-  const amount = parseInt(req.body.amount);
-  if (isNaN(amount) || amount <= 0) {
-    return res.status(400).send('Monto inválido');
+  const amount = parseFloat(req.body.amount);
+  const screenshot = req.file;
+
+  if (!screenshot || isNaN(amount)) {
+    return res.status(400).send('Datos inválidos');
   }
 
-  const data = readData();
-  data.paid += amount;
-  if (data.paid > TOTAL_DEBT) data.paid = TOTAL_DEBT;
+  let data = { total: 20000, payments: [] };
 
-  // Guardamos info del pago
-  const payment = {
+  try {
+    const file = fs.readFileSync('data.json', 'utf8');
+    data = JSON.parse(file);
+  } catch (err) {
+    // Si no existe data.json lo crea
+  }
+
+  const newPayment = {
     amount,
-    filename: req.file ? req.file.filename : null,
-    originalname: req.file ? req.file.originalname : null,
-    date: new Date().toISOString()
+    file: screenshot.filename,
+    originalName: screenshot.originalname,
+    date: new Date().toISOString(),
   };
-  data.payments.push(payment);
 
-  writeData(data);
+  data.payments.push(newPayment);
+
+  fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
 
   res.redirect('/');
 });
 
-// GET /progress
+// ✅ Progreso visual
 app.get('/progress', (req, res) => {
-  const data = readData();
-  res.json({ paid: data.paid, total: TOTAL_DEBT });
+  try {
+    const file = fs.readFileSync('data.json', 'utf8');
+    const data = JSON.parse(file);
+    const paid = data.payments.reduce((sum, p) => sum + p.amount, 0);
+    res.json({ paid, total: data.total });
+  } catch (err) {
+    res.json({ paid: 0, total: 0 });
+  }
 });
 
-// GET /payments - mostrar lista simple de pagos con imágenes
-app.get('/payments', (req, res) => {
-  const data = readData();
+// ✅ Archivos públicos (después de las rutas dinámicas)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static('public'));
 
-  const htmlPayments = data.payments.map(p => `
-    <div style="margin-bottom: 20px; padding:10px; border:1px solid #ccc; border-radius:8px;">
-      <strong>Monto:</strong> $${p.amount.toLocaleString()} <br />
-      <strong>Fecha:</strong> ${new Date(p.date).toLocaleString()} <br />
-      ${p.filename ? `<img src="/uploads/${p.filename}" alt="${p.originalname}" style="max-width:300px; margin-top:10px;" />` : ''}
-    </div>
-  `).join('');
-
-  res.send(`
-    <h1>Listado de pagos</h1>
-    <a href="/">Volver</a>
-    <div>${htmlPayments || '<p>No hay pagos registrados.</p>'}</div>
-  `);
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-// Para todas las demás rutas, servimos el index.html
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-module.exports = app;
