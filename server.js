@@ -61,7 +61,7 @@ app.get('/payments', (req, res) => {
   const data = readData();
 
   const htmlPayments = data.payments.map(p => `
-    <div style="margin-bottom: 20px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+    <div class="payment-card">
       <strong>Monto:</strong> $${p.amount.toLocaleString()} <br />
       <strong>Fecha:</strong> ${new Date(p.uploadedAt).toLocaleString()} <br />
       ${p.filename ? `
@@ -151,5 +151,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
 
 
