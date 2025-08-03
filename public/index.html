@@ -1,28 +1,29 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Amgorilas 🦍</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Amgorilas</title>
 </head>
 <body>
-  <h1>Amgorilas 🦍</h1>
-
-  <div class="progress-container">
-    <div class="progress-bar" id="progress-bar"></div>
-    <span id="progress-text">Cargando...</span>
-  </div>
-
+  <h1>Subí tu comprobante</h1>
   <form action="/upload" method="POST" enctype="multipart/form-data">
-    <label for="amount">Monto transferido ($):</label>
-    <input type="number" name="amount" required>
-
-    <label for="screenshot">Captura de transferencia:</label>
-    <input type="file" name="screenshot" accept="image/*" required>
-
-    <button type="submit">Subir comprobante</button>
+    <input type="number" name="amount" placeholder="Monto pagado" required />
+    <input type="file" name="screenshot" accept="image/*" required />
+    <button type="submit">Subir</button>
   </form>
 
-  <script src="script.js"></script>
+  <h2>Progreso:</h2>
+  <div id="progress"></div>
+
+  <script>
+    fetch('/progress')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('progress').innerText =
+          `Pagado: $${data.paid} / $${data.total}`;
+      });
+  </script>
 </body>
 </html>
+
