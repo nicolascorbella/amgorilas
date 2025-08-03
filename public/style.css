@@ -1,63 +1,69 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  max-width: 600px;
-  margin: 40px auto;
+  font-family: sans-serif;
+  background: #f8f9fa;
+  margin: 0;
   padding: 20px;
-  text-align: center;
-  border-radius: 8px;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
   background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-h1 {
-  margin-bottom: 30px;
-}
-
-.progress-container {
-  background: #ddd;
-  border-radius: 10px;
-  height: 30px;
-  position: relative;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  background: #4caf50;
-  height: 100%;
-  width: 0%;
-  transition: width 0.5s;
-}
-
-#progress-text {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  top: 5px;
-  font-weight: bold;
-  color: #333;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 input, button {
-  padding: 10px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
   font-size: 16px;
 }
 
 button {
-  background: #4caf50;
+  background: #305EF2;
   color: white;
   border: none;
+  border-radius: 6px;
   cursor: pointer;
-  border-radius: 4px;
 }
 
-button:hover {
-  background: #45a049;
+.progress-wrapper {
+  width: 100%;
+  background: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 20px;
+  background: #4caf50;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+#progress-text {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.payment-card {
+  display: flex;
+  background: #fff;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.payment-card img {
+  width: 40%;
+  object-fit: cover;
+}
+
+.payment-card .info {
+  padding: 10px;
+  width: 60%;
 }
