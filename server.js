@@ -73,9 +73,72 @@ app.get('/payments', (req, res) => {
   `).join('');
 
   res.send(`
-    <h1>Listado de pagos</h1>
-    <a href="/">Volver al formulario</a>
-    <div>${htmlPayments || '<p>No hay pagos registrados.</p>'}</div>
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Listado de pagos</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f0f4ff;
+          padding: 20px;
+          margin: 0;
+          color: #222;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        h1 {
+          color: #305EF2;
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        a.back-link {
+          display: inline-block;
+          margin-bottom: 20px;
+          color: #305EF2;
+          text-decoration: none;
+          font-weight: bold;
+        }
+        a.back-link:hover {
+          text-decoration: underline;
+        }
+        .payment-card {
+          background: white;
+          padding: 15px;
+          border-radius: 10px;
+          box-shadow: 0 3px 8px rgba(48, 94, 242, 0.2);
+          margin-bottom: 20px;
+        }
+        .payment-card img {
+          max-width: 100%;
+          margin-top: 10px;
+          border-radius: 8px;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(48, 94, 242, 0.3);
+          transition: transform 0.2s ease;
+        }
+        .payment-card img:hover {
+          transform: scale(1.05);
+        }
+        @media (max-width: 480px) {
+          body {
+            padding: 10px;
+          }
+          .payment-card {
+            padding: 12px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Listado de pagos</h1>
+      <a href="/" class="back-link">&larr; Volver al formulario</a>
+      ${htmlPayments || '<p>No hay pagos registrados.</p>'}
+    </body>
+    </html>
   `);
 });
 
@@ -88,4 +151,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
 
