@@ -1,32 +1,124 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8" />
+  <title>Amgorilas - Subí tu comprobante</title>
   <link rel="stylesheet" href="/style.css" />
-
-  <meta charset="UTF-8">
-  <title>Amgorilas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #f5f7fa;
+      color: #333;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #305EF2;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgb(48 94 242 / 0.3);
+      margin-bottom: 30px;
+    }
+    input[type="number"], input[type="file"] {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      background-color: #305EF2;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #254abd;
+    }
+    #progress-container {
+      background: #ddd;
+      border-radius: 10px;
+      height: 25px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #305EF2;
+      transition: width 0.5s ease;
+      border-radius: 10px 0 0 10px;
+    }
+    #progress-text {
+      text-align: center;
+      font-weight: bold;
+      color: #305EF2;
+    }
+    .footer-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #305EF2;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
+
   <h1>Subí tu comprobante</h1>
   <form action="/upload" method="POST" enctype="multipart/form-data">
-    <input type="number" name="amount" placeholder="Monto pagado" required />
+    <input type="number" name="amount" placeholder="Monto pagado" required min="1" />
     <input type="file" name="screenshot" accept="image/*" required />
     <button type="submit">Subir</button>
   </form>
 
-  <h2>Progreso:</h2>
-  <div id="progress"></div>
+  <h2>Progreso de pagos</h2>
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text">Cargando progreso...</div>
+
+  <a href="/payments" class="footer-link">Ver todos los pagos</a>
 
   <script>
-    fetch('/progress')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('progress').innerText =
-          `Pagado: $${data.paid} / $${data.total}`;
-      });
+    function updateProgress() {
+      fetch('/progress')
+        .then(res => res.json())
+        .then(data => {
+          const { paid, total } = data;
+          const percent = Math.min((paid / total) * 100, 100);
+          const progressBar = document.getElementById('progress-bar');
+          const progressText = document.getElementById('progress-text');
+
+          progressBar.style.width = percent + '%';
+          progressText.textContent = `Pagado: $${paid.toLocaleString()} / $${total.toLocaleString()} (${percent.toFixed(2)}%)`;
+        })
+        .catch(() => {
+          document.getElementById('progress-text').textContent = 'No se pudo cargar el progreso.';
+        });
+    }
+
+    updateProgress();
+
+    // Opcional: actualizar cada 30 segundos
+    setInterval(updateProgress, 30000);
   </script>
+
 </body>
 </html>
-
-
