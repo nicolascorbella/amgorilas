@@ -12,11 +12,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Asegura que haya un archivo data.json inicial
+// Función corregida para asegurar estructura de data.json
 function readData() {
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify({ paid: 0, payments: [] }));
-  return JSON.parse(fs.readFileSync(DATA_FILE));
+  if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify({ paid: 0, payments: [] }));
+  }
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(DATA_FILE));
+  } catch {
+    data = { paid: 0, payments: [] };
+  }
+  if (!Array.isArray(data.payments)) data.payments = [];
+  if (typeof data.paid !== 'number') data.paid = 0;
+  return data;
 }
+
 function writeData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data));
 }
@@ -55,7 +66,6 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// IMPORTANTE: Esto es lo que faltaba
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
